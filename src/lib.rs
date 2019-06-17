@@ -56,7 +56,7 @@ pub struct CsrMatrixPtrs {
 extern {
     fn negative_prob_multiply_dense_matrix_vector_cpu(iters: isize, matrix: *const f32, in_vector: *const f32, out_vector: *mut f32, outerdim: usize, innerdim: usize);
     fn negative_prob_multiply_dense_matrix_vector_gpu(iters: isize, matrix: *const f32, in_vector: *const f32, out_vector: *mut f32, outerdim: usize, innerdim: usize);
-    
+
     fn npmmv_gpu_set_float_array(src: *const f32, size: usize, dst: GpuFloatArray);
     fn npmmv_gpu_get_float_array(src: GpuFloatArray, dst: *mut f32, size: usize);
 
