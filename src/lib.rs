@@ -6,6 +6,11 @@ extern crate libc;
 
 use ndarray::Array2;
 
+pub enum GpuAllocations {
+    Dense(NpmmvDenseGpuAllocations),
+    Sparse(NpmmvCsrGpuAllocations)
+}
+
 // TODO: It may be better to keep move semantics on this type and call npmmv_gpu_free() on its destruction
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -42,9 +47,9 @@ struct GpuUIntArray {
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct CsrMatrixPtrs {
-    pub cum_row_indexes: *mut usize,
-    pub column_indexes: *mut usize,
-    pub values: *mut f32
+    pub cum_row_indexes: *const usize,
+    pub column_indexes: *const usize,
+    pub values: *const f32
 }
 
 #[link(name = "concurrentgraph_cuda")]
@@ -54,8 +59,6 @@ extern {
     
     fn npmmv_gpu_set_float_array(src: *const f32, size: usize, dst: GpuFloatArray);
     fn npmmv_gpu_get_float_array(src: GpuFloatArray, dst: *mut f32, size: usize);
-    fn npmmv_gpu_set_uint_array(src: *const usize, size: usize, dst: GpuUIntArray);
-    fn npmmv_gpu_get_uint_array(src: GpuUIntArray, dst: *mut usize, size: usize);
 
     fn npmmv_dense_gpu_allocate(outerdim: usize, innerdim: usize) -> NpmmvDenseGpuAllocations;
     fn npmmv_dense_gpu_free(gpu_allocations: NpmmvDenseGpuAllocations);
@@ -105,19 +108,21 @@ pub fn npmmv_dense_gpu_free_safe(gpu_allocations: NpmmvDenseGpuAllocations) {
     unsafe { npmmv_dense_gpu_free(gpu_allocations) }
 }
 
-pub fn npmmv_gpu_set_in_vector_safe(vector: Vec<f32>, gpu_allocations: NpmmvDenseGpuAllocations) {
-    unsafe { npmmv_gpu_set_float_array(vector.as_ptr(), vector.len(), gpu_allocations.in_vector) }
+pub fn npmmv_gpu_set_in_vector_safe(vector: Vec<f32>, gpu_allocations: GpuAllocations) {
+    let iv_ptr = match gpu_allocations { GpuAllocations::Dense(ga) => ga.in_vector, GpuAllocations::Sparse(ga) => ga.in_vector };
+    unsafe { npmmv_gpu_set_float_array(vector.as_ptr(), vector.len(), iv_ptr) }
 }
 
 pub fn npmmv_gpu_set_dense_matrix_safe(mat: &Array2<f32>, gpu_allocations: NpmmvDenseGpuAllocations) {
     unsafe { npmmv_gpu_set_dense_matrix(mat.as_ptr(), gpu_allocations.matrix, mat.shape()[0], mat.shape()[1]) }
 }
 
-pub fn npmmv_gpu_get_out_vector_safe(gpu_allocations: NpmmvDenseGpuAllocations, size: usize) -> Vec<f32> {
+pub fn npmmv_gpu_get_out_vector_safe(gpu_allocations: GpuAllocations, size: usize) -> Vec<f32> {
+    let ov_ptr = match gpu_allocations { GpuAllocations::Dense(ga) => ga.out_vector, GpuAllocations::Sparse(ga) => ga.out_vector };
     let mut result: Vec<f32> = Vec::with_capacity(size);
     unsafe {
         result.set_len(size);
-        npmmv_gpu_get_float_array(gpu_allocations.out_vector, result.as_mut_ptr(), size);
+        npmmv_gpu_get_float_array(ov_ptr, result.as_mut_ptr(), size);
     }
     result
 }
