@@ -1,3 +1,7 @@
+use std::path::Path;
+use std::env;
+
 fn main() {
-    println!("cargo:rustc-link-search=native=/mnt/c/Users/Wesley/dev/concurrentgraph/concurrentgraph_cuda_sys/lib/");
+    let dir = env::var("CARGO_MANIFEST_DIR").unwrap();
+    println!("cargo:rustc-link-search=native={}", Path::new(&dir).join("lib").display());
 }
