@@ -120,8 +120,10 @@ pub fn npmmv_gpu_set_dense_matrix_safe(mat: &Array2<f32>, gpu_allocations: Npmmv
 pub fn npmmv_gpu_get_out_vector_safe(gpu_allocations: GpuAllocations, size: usize) -> Vec<f32> {
     let ov_ptr = match gpu_allocations { GpuAllocations::Dense(ga) => ga.out_vector, GpuAllocations::Sparse(ga) => ga.out_vector };
     let mut result: Vec<f32> = Vec::with_capacity(size);
+    println!("Out vec allocated");
     unsafe {
         result.set_len(size);
+        println!("Out vec resized");
         npmmv_gpu_get_float_array(ov_ptr, result.as_mut_ptr(), size);
     }
     result
