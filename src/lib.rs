@@ -77,8 +77,9 @@ pub fn negative_prob_multiply_dense_matrix_vector_cpu_safe<'a>(iters: isize, mat
         return Err("Incompatible dimensions");
     } else {
         let mut result: Vec<f32> = Vec::with_capacity(mat.shape()[0]);
+        result.resize(mat.shape()[0], 1.0);
         unsafe {
-            result.set_len(mat.shape()[0]);
+            //result.set_len(mat.shape()[0]);
             negative_prob_multiply_dense_matrix_vector_cpu(iters, mat.as_ptr(), vector.as_ptr(), result.as_mut_ptr(), mat.shape()[0], mat.shape()[1]);
         }
         return Ok(result);
