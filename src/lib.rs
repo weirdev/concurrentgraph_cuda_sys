@@ -68,7 +68,7 @@ extern {
     fn npmmv_csr_gpu_allocate(outerdim: usize, innerdim: usize, values: usize) -> NpmmvCsrGpuAllocations;
     fn npmmv_csr_gpu_free(gpu_allocations: NpmmvCsrGpuAllocations);
     fn npmmv_gpu_set_csr_matrix(matrix_cpu: CsrMatrixPtrs, gpu_allocations: NpmmvCsrGpuAllocations, outerdim: usize, values: usize);
-    fn npmmv_csr_gpu_compute(gpu_allocations: NpmmvCsrGpuAllocations, outerdim: usize);
+    fn npmmv_csr_gpu_compute(gpu_allocations: NpmmvCsrGpuAllocations, outerdim: usize, computation_restriction_factor: usize);
 }
 
 pub fn negative_prob_multiply_dense_matrix_vector_cpu_safe<'a>(iters: isize, mat: Arc<Array2<f32>>, vector: Vec<f32>)
@@ -147,6 +147,6 @@ pub fn npmmv_gpu_set_csr_matrix_safe(mat: CsrMatrixPtrs, gpu_allocations: NpmmvC
     unsafe { npmmv_gpu_set_csr_matrix(mat, gpu_allocations, outerdim, values) }
 }
 
-pub fn npmmv_csr_gpu_compute_safe(gpu_allocations: NpmmvCsrGpuAllocations, outerdim: usize) {
-    unsafe { npmmv_csr_gpu_compute(gpu_allocations, outerdim) }
+pub fn npmmv_csr_gpu_compute_safe(gpu_allocations: NpmmvCsrGpuAllocations, outerdim: usize, computation_restriction_factor: usize) {
+    unsafe { npmmv_csr_gpu_compute(gpu_allocations, outerdim, computation_restriction_factor) }
 }
