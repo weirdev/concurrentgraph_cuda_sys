@@ -30,6 +30,14 @@ pub struct NpmmvCsrGpuAllocations {
     out_vector: GpuFloatArray
 }
 
+pub struct BfsCsrGpuAllocations {
+    mat_cum_row_indexes: GpuUIntArray,
+    mat_column_indexes: GpuUIntArray,
+    mat_values: GpuFloatArray,
+    in_infections: GpuUIntArray,
+    out_infections: GpuUIntArray
+}
+
 #[repr(C)]
 #[derive(Clone, Copy)]
 struct GpuFloatArray {
@@ -69,6 +77,11 @@ extern {
     fn npmmv_csr_gpu_free(gpu_allocations: NpmmvCsrGpuAllocations);
     fn npmmv_gpu_set_csr_matrix(matrix_cpu: CsrMatrixPtrs, gpu_allocations: NpmmvCsrGpuAllocations, outerdim: usize, values: usize);
     fn npmmv_csr_gpu_compute(gpu_allocations: NpmmvCsrGpuAllocations, outerdim: usize, computation_restriction_factor: usize);
+
+    fn bfs_csr_gpu_allocate(rows: usize, values: usize) -> BfsCsrGpuAllocations;
+    fn bfs_csr_gpu_free(gpu_allocations: BfsCsrGpuAllocations);
+    fn bfs_gpu_set_csr_matrix(matrix_cpu: CsrMatrixPtrs, gpu_allocations: BfsCsrGpuAllocations, rows: usize, values: usize);
+    fn bfs_csr_gpu_compute(gpu_allocations: BfsCsrGpuAllocations, rows: usize);
 }
 
 pub fn negative_prob_multiply_dense_matrix_vector_cpu_safe<'a>(iters: isize, mat: Arc<Array2<f32>>, vector: Vec<f32>)
@@ -147,4 +160,20 @@ pub fn npmmv_gpu_set_csr_matrix_safe(mat: CsrMatrixPtrs, gpu_allocations: NpmmvC
 
 pub fn npmmv_csr_gpu_compute_safe(gpu_allocations: NpmmvCsrGpuAllocations, outerdim: usize, computation_restriction_factor: usize) {
     unsafe { npmmv_csr_gpu_compute(gpu_allocations, outerdim, computation_restriction_factor) }
+}
+
+pub fn bfs_csr_gpu_allocate_safe(rows: usize, values: usize) -> BfsCsrGpuAllocations {
+    unsafe { bfs_csr_gpu_allocate(rows, values) }
+}
+
+pub fn bfs_csr_gpu_free_safe(gpu_allocations: BfsCsrGpuAllocations) {
+    unsafe { bfs_csr_gpu_free(gpu_allocations) }
+}
+
+pub fn bfs_gpu_set_csr_matrix_safe(matrix_cpu: CsrMatrixPtrs, gpu_allocations: BfsCsrGpuAllocations, rows: usize, values: usize) {
+    unsafe { bfs_gpu_set_csr_matrix(matrix_cpu, gpu_allocations, rows, values) }
+}
+
+pub fn bfs_csr_gpu_compute_safe(gpu_allocations: BfsCsrGpuAllocations, rows: usize) {
+    unsafe { bfs_csr_gpu_compute(gpu_allocations, rows) }
 }
