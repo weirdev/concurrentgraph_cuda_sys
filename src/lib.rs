@@ -228,7 +228,9 @@ pub fn graph_deterministic_weights_gpu_safe(matrix_cpu: CsrFloatMatrixPtrs, rows
         -> Vec<isize> {
 
     unsafe {
-        Vec::from_raw_parts(graph_deterministic_weights(matrix_cpu, rows, values, immunities.as_ptr(), shedding_curve.as_ptr(), infection_length, transmission_rate),
+        let ar_ptr: *mut isize = graph_deterministic_weights(matrix_cpu, rows, values, immunities.as_ptr(), shedding_curve.as_ptr(), infection_length, transmission_rate);
+        println!("ptr calc");
+        Vec::from_raw_parts(ar_ptr,
                 values, values)
     }
 }
