@@ -98,6 +98,8 @@ extern {
     fn bfs_csr_gpu_free(gpu_allocations: BfsCsrGpuAllocations);
     fn bfs_gpu_set_csr_matrix(matrix_cpu: CsrIntMatrixPtrs, gpu_allocations: BfsCsrGpuAllocations, rows: usize, values: usize);
     fn bfs_csr_gpu_compute(gpu_allocations: BfsCsrGpuAllocations, rows: usize);
+
+    fn graph_deterministic_weights(matrix_cpu: CsrFloatMatrixPtrs, rows: usize, values: usize, immunities: *const f32, shedding_curve: *const f32, infection_length: usize, transmission_rate: f32) -> *mut isize;
 }
 
 pub fn negative_prob_multiply_dense_matrix_vector_cpu_safe<'a>(iters: isize, mat: Arc<Array2<f32>>, vector: Vec<f32>)
@@ -219,4 +221,14 @@ pub fn bfs_gpu_get_out_vector_safe(gpu_allocations: BfsAllocations, size: usize)
         get_gpu_uint_array(ov_ptr, result.as_mut_ptr(), size);
     }
     result
+}
+
+pub fn graph_deterministic_weights_gpu_safe(matrix_cpu: CsrFloatMatrixPtrs, rows: usize, values: usize,
+        immunities: Vec<f32>, shedding_curve: Vec<f32>, infection_length: usize, transmission_rate: f32) 
+        -> Vec<isize> {
+
+    unsafe {
+        Vec::from_raw_parts(graph_deterministic_weights(matrix_cpu, rows, values, immunities.as_ptr(), shedding_curve.as_ptr(), infection_length, transmission_rate),
+                values, values)
+    }
 }
