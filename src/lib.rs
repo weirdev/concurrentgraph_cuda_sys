@@ -242,7 +242,7 @@ pub fn graph_deterministic_weights_gpu_safe(matrix_cpu: CsrFloatMatrixPtrs, rows
 pub fn sssp_safe(matrix_cpu: CsrFloatMatrixPtrs, nodes: usize, edges: usize) -> Vec<f32> {
     let mut output: Vec<f32> = Vec::with_capacity(nodes);
     unsafe {
-        output.set_len(nodes);
+        output.set_len(nodes + 1);
         sssp(matrix_cpu.cum_row_indexes as *const isize, matrix_cpu.column_indexes as *const isize, matrix_cpu.values, nodes, edges, output.as_mut_ptr());
     }
     output
