@@ -102,7 +102,7 @@ extern {
     fn graph_deterministic_weights(matrix_cpu: CsrFloatMatrixPtrs, rows: usize, values: usize, immunities: *const f32, shedding_curve: *const f32, infection_length: usize, transmission_rate: f32) -> *mut isize;
 
     // From sssp.cpp
-    fn sssp(cum_col_indexes: *const isize, row_indexes: *const isize, values: *const f32, nodes: usize, edges: usize, output: *mut f32);
+    fn sssp(cum_col_indexes: *const isize, row_indexes: *const isize, values: *const f32, nodes_i: usize, edges_i: usize, output: *mut f32);
 }
 
 pub fn negative_prob_multiply_dense_matrix_vector_cpu_safe<'a>(iters: isize, mat: Arc<Array2<f32>>, vector: Vec<f32>)
