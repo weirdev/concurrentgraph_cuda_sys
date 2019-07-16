@@ -100,6 +100,9 @@ extern {
     fn bfs_csr_gpu_compute(gpu_allocations: BfsCsrGpuAllocations, rows: usize);
 
     fn graph_deterministic_weights(matrix_cpu: CsrFloatMatrixPtrs, rows: usize, values: usize, immunities: *const f32, shedding_curve: *const f32, infection_length: usize, transmission_rate: f32) -> *mut isize;
+
+    // From sssp.cpp
+    fn sssp(cum_col_indexes: *const isize, row_indexes: *const isize, values: *const f32, nodes: usize, edges: usize, output: *mut f32);
 }
 
 pub fn negative_prob_multiply_dense_matrix_vector_cpu_safe<'a>(iters: isize, mat: Arc<Array2<f32>>, vector: Vec<f32>)
@@ -228,13 +231,19 @@ pub fn graph_deterministic_weights_gpu_safe(matrix_cpu: CsrFloatMatrixPtrs, rows
         -> Vec<isize> {
 
     unsafe {
-        println!("start us");
         let imm = immunities.as_ptr();
         let shedd = shedding_curve.as_ptr();
-        println!("precall");
         let ar_ptr: *mut isize = graph_deterministic_weights(matrix_cpu, rows, values, imm, shedd, infection_length, transmission_rate);
-        println!("ptr calc");
         Vec::from_raw_parts(ar_ptr,
                 values, values)
     }
+}
+
+pub fn sssp_safe(matrix_cpu: CsrFloatMatrixPtrs, nodes: usize, edges: usize) -> Vec<f32> {
+    let mut output: Vec<f32> = Vec::with_capacity(nodes);
+    unsafe {
+        output.set_len(nodes);
+        sssp(matrix_cpu.cum_row_indexes as *const isize, matrix_cpu.column_indexes as *const isize, matrix_cpu.values, nodes, edges, output.as_mut_ptr());
+    }
+    output
 }
